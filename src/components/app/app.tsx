@@ -1,8 +1,9 @@
-import { ConstructorPage } from '@pages';
+import { ConstructorPage, Feed, NotFound404, Login, Register, ForgotPassword, ResetPassword, Profile, ProfileOrders } from '@pages';
 import '../../index.css';
 import styles from './app.module.css';
+import { Routes, Route } from 'react-router-dom';
 
-import { AppHeader } from '@components';
+import { AppHeader, Modal, OrderInfo, IngredientDetails } from '@components';
 import { Preloader } from '@ui';
 
 const App = () => {
@@ -14,19 +15,24 @@ const App = () => {
   return (
     <div className={styles.app}>
       <AppHeader />
-      {isIngredientsLoading ? (
-        <Preloader />
-      ) : error ? (
-        <div className={`${styles.error} text text_type_main-medium pt-4`}>
-          {error}
-        </div>
-      ) : ingredients.length > 0 ? (
-        <ConstructorPage />
-      ) : (
-        <div className={`${styles.title} text text_type_main-medium pt-4`}>
-          Нет игредиентов
-        </div>
-      )}
+      <Routes>
+      <Route path='*' element={<NotFound404 />} />
+      <Route path='/' element={<ConstructorPage />} />
+      <Route path='/feed' element={<Feed />} />
+      <Route path='/feed/:number' element={<Modal><OrderInfo /></Modal>} />
+      <Route path='/ingredients/:id' element={<Modal><IngredientDetails /></Modal>} />
+    </Routes>
+    <Routes>
+      <Route path='/login' element={<Login />} />
+      <Route path='/register' element={<Register />} />
+      <Route path='/forgot-password' element={<ForgotPassword />} />
+      <Route path='/reset-password' element={<ResetPassword />} />
+      <Route path='/profile' element={<Profile />}>
+        <Route path='orders' element={<ProfileOrders />}>
+          <Route path=':number' element={<Modal><OrderInfo /></Modal>} />
+        </Route>
+      </Route>
+    </Routes>
     </div>
   );
 };
