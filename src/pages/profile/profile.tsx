@@ -4,13 +4,13 @@ import { useDispatch, useSelector } from '../../services/store';
 import {
   updateUser,
   selectUser,
-  selectError
+  selectUpdateError
 } from '../../services/slices/userSlice';
 
 export const Profile: FC = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const updateError = useSelector(selectError);
+  const updateError = useSelector(selectUpdateError);
 
   const [formValue, setFormValue] = useState({
     name: user?.name || '',

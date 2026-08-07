@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { Preloader } from '@ui';
 import { useSelector } from '../../services/store';
 import {
-  selectIsAuthorized,
+  selectIsAuthChecked,
   selectUser
 } from '../../services/slices/userSlice';
 
@@ -17,7 +17,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
   children
 }) => {
   const location = useLocation();
-  const isAuthorized = useSelector(selectIsAuthorized);
+  const isAuthorized = useSelector(selectIsAuthChecked);
   const user = useSelector(selectUser);
 
   if (!isAuthorized) {
@@ -25,7 +25,9 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
   }
 
   if (unauthorized && user) {
-    return <Navigate to='/' state={{ from: location }} replace />;
+    const from = (location.state as { from?: { pathname: string } })?.from
+      ?.pathname;
+    return <Navigate to={from || '/'} replace />;
   }
 
   if (!unauthorized && !user) {

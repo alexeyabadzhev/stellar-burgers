@@ -13,14 +13,18 @@ import { getCookie, setCookie, deleteCookie } from '../../utils/cookie';
 
 interface UserStateProps {
   user: TUser | null;
-  isAuthorized: boolean;
-  error: string | undefined;
+  isAuthChecked: boolean;
+  loginError: string | undefined;
+  registerError: string | undefined;
+  updateError: string | undefined;
 }
 
 const initialState: UserStateProps = {
   user: null,
-  isAuthorized: false,
-  error: undefined
+  isAuthChecked: false,
+  loginError: undefined,
+  registerError: undefined,
+  updateError: undefined
 };
 
 export const checkUserAuthorization = createAsyncThunk<TUser | null>(
@@ -72,63 +76,69 @@ export const userSlice = createSlice({
   reducers: {},
   selectors: {
     selectUser: (state) => state.user,
-    selectIsAuthorized: (state) => state.isAuthorized,
-    selectError: (state) => state.error
+    selectIsAuthChecked: (state) => state.isAuthChecked,
+    selectLoginError: (state) => state.loginError,
+    selectRegisterError: (state) => state.registerError,
+    selectUpdateError: (state) => state.updateError
   },
   extraReducers: (builder) => {
     builder
       .addCase(checkUserAuthorization.pending, (state) => {
-        state.isAuthorized = false;
+        state.isAuthChecked = false;
       })
       .addCase(checkUserAuthorization.rejected, (state, action) => {
-        state.isAuthorized = true;
+        state.isAuthChecked = true;
         state.user = null;
-        state.error = action.error.message;
       })
       .addCase(checkUserAuthorization.fulfilled, (state, action) => {
         state.user = action.payload;
-        state.isAuthorized = true;
+        state.isAuthChecked = true;
       })
       .addCase(loginUser.pending, (state) => {
-        state.error = undefined;
+        state.loginError = undefined;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.loginError = action.error.message;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload;
-        state.isAuthorized = true;
+        state.isAuthChecked = true;
       })
       .addCase(registerUser.pending, (state) => {
-        state.error = undefined;
+        state.registerError = undefined;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.registerError = action.error.message;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.user = action.payload;
-        state.isAuthorized = true;
+        state.isAuthChecked = true;
       })
       .addCase(updateUser.pending, (state) => {
-        state.error = undefined;
+        state.updateError = undefined;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.updateError = action.error.message;
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload;
       })
       .addCase(logoutUser.rejected, (state) => {
         state.user = null;
-        state.isAuthorized = false;
+        state.isAuthChecked = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
-        state.isAuthorized = false;
+        state.isAuthChecked = true;
       });
   }
 });
 
-export const { selectUser, selectIsAuthorized, selectError } =
-  userSlice.selectors;
+export const {
+  selectUser,
+  selectIsAuthChecked,
+  selectLoginError,
+  selectRegisterError,
+  selectUpdateError
+} = userSlice.selectors;
 export default userSlice.reducer;

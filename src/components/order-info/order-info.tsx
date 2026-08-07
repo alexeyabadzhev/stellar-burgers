@@ -3,20 +3,24 @@ import { useParams } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '@utils-types';
-import { useSelector } from '../../services/store';
+import { useSelector, useDispatch } from '../../services/store';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
-import { getOrderByNumberApi } from '@api';
+import {
+  getOrderByNumber,
+  selectOrderByNumber,
+  selectOrderByNumberLoading
+} from '../../services/slices/orderByNumberSlice';
 
 export const OrderInfo: FC = () => {
-  const [orderData, setOrderData] = useState<TOrder | null>(null);
+  const dispatch = useDispatch();
+  const orderData = useSelector(selectOrderByNumber);
+  const isLoading = useSelector(selectOrderByNumberLoading);
   const ingredients = useSelector(selectIngredients);
   const { number } = useParams();
 
   useEffect(() => {
-    getOrderByNumberApi(Number(number))
-      .then((res) => setOrderData(res.orders[0]))
-      .catch(() => setOrderData(null));
-  }, [number]);
+    dispatch(getOrderByNumber(Number(number)));
+  }, [dispatch, number]);
 
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
@@ -58,7 +62,7 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (isLoading || !orderInfo) {
     return <Preloader />;
   }
 
