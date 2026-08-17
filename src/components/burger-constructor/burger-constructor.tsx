@@ -1,24 +1,50 @@
 import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+import {
+  selectBun,
+  selectConstructorIngredients,
+  resetConstructor
+} from '../../services/slices/constructorSlice';
+import {
+  burgerOrder,
+  resetOrder,
+  selectRequest,
+  selectModalData
+} from '../../services/slices/orderSlice';
+import { selectUser } from '../../services/slices/userSlice';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const bun = useSelector(selectBun);
+  const ingredients = useSelector(selectConstructorIngredients);
+  const request = useSelector(selectRequest);
+  const modalData = useSelector(selectModalData);
+  const user = useSelector(selectUser);
 
-  const orderRequest = false;
-
-  const orderModalData = null;
+  const constructorItems = { bun, ingredients };
 
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
+    if (!constructorItems.bun || request) return;
+    if (!user) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    const ids = [
+      constructorItems.bun._id,
+      ...ingredients.map((item) => item._id),
+      constructorItems.bun._id
+    ];
+    dispatch(burgerOrder(ids))
+      .unwrap()
+      .then(() => dispatch(resetConstructor()))
+      .catch(() => {});
   };
-  const closeOrderModal = () => {};
+  const closeOrderModal = () => dispatch(resetOrder());
 
   const price = useMemo(
     () =>
@@ -30,14 +56,12 @@ export const BurgerConstructor: FC = () => {
     [constructorItems]
   );
 
-  return null;
-
   return (
     <BurgerConstructorUI
       price={price}
-      orderRequest={orderRequest}
+      orderRequest={request}
       constructorItems={constructorItems}
-      orderModalData={orderModalData}
+      orderModalData={modalData}
       onOrderClick={onOrderClick}
       closeOrderModal={closeOrderModal}
     />
