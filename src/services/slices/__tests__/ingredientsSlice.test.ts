@@ -26,7 +26,10 @@ describe('Reducer tests', () => {
   });
 
   test('Ожидание ингридиентов', () => {
-    const state = ingredientsReducer(undefined, getIngredients.pending('request-id'));
+    const state = ingredientsReducer(
+      undefined,
+      getIngredients.pending('request-id')
+    );
     expect(state).toEqual({
       ingredients: [],
       isLoading: true,
@@ -35,7 +38,10 @@ describe('Reducer tests', () => {
   });
 
   test('Ингредиенты получены', () => {
-    const state = ingredientsReducer(undefined, getIngredients.fulfilled([testIngredient], 'request-id'));
+    const state = ingredientsReducer(
+      undefined,
+      getIngredients.fulfilled([testIngredient], 'request-id')
+    );
     expect(state).toEqual({
       ingredients: [testIngredient],
       isLoading: false,

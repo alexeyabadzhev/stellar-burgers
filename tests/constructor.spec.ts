@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test';
-import ingredients from '../src/mocks/ingredients.json';
 
-const bun = ingredients.find((item) => item.type === 'bun');
-const main = ingredients.find((item) => item.type === 'main');
+const bun = 'Краторная булка N-200i';
+const main = 'Филе Люминесцентного тетраодонтимформа';
+const order = '109218';
+const user = 'Алексей';
 
 test.describe('Burger constructor', () => {
   test.beforeEach(async ({ page }) => {
     await page.routeFromHAR('tests/hars/ingredients.har', {
-      url: '**/api/ingredients'
+      url: '**/api/ingredients',
+      notFound: 'abort'
     });
     await page.goto('/');
   });
@@ -16,14 +18,14 @@ test.describe('Burger constructor', () => {
     await expect(page.getByText('Соберите бургер')).toBeVisible();
 
     await page
-      .locator('li', { hasText: bun?.name })
+      .locator('li', { hasText: bun })
       .getByRole('button', { name: 'Добавить' })
       .click();
-    await expect(page.getByText(`${bun?.name} (верх)`)).toBeVisible();
-    await expect(page.getByText(`${bun?.name} (низ)`)).toBeVisible();
+    await expect(page.getByText(`${bun} (верх)`)).toBeVisible();
+    await expect(page.getByText(`${bun} (низ)`)).toBeVisible();
 
     await page
-      .locator('li', { hasText: main?.name })
+      .locator('li', { hasText: main })
       .getByRole('button', { name: 'Добавить' })
       .click();
     await expect(page.getByText('Выберите начинку')).not.toBeVisible();
@@ -32,15 +34,15 @@ test.describe('Burger constructor', () => {
   test('Открытие и закрытие модального окна', async ({ page }) => {
     await expect(page.getByText('Соберите бургер')).toBeVisible();
 
-    await page.getByText(bun?.name).first().click();
+    await page.getByText(bun).first().click();
     const modal = page.getByTestId('modal');
     await expect(modal).toBeVisible();
-    await expect(modal.getByText(bun?.name)).toBeVisible();
+    await expect(modal.getByText(bun)).toBeVisible();
 
     await page.getByTestId('modal-close').click();
     await expect(modal).not.toBeVisible();
 
-    await page.getByText(`${bun?.name}`).first().click();
+    await page.getByText(`${bun}`).first().click();
     await expect(modal).toBeVisible();
     await page
       .getByTestId('modal-overlay-close')
@@ -61,54 +63,32 @@ test.describe('Burger constructor', () => {
       localStorage.setItem('refreshToken', 'mock-refresh-token');
     });
 
-    await page.route('**/api/auth/user', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          user: { email: 'mock@mock.ru', name: 'Mock user' }
-        })
-      })
-    );
-
-    await page.route('**/api/orders', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          name: 'Краторный бургер',
-          order: {
-            _id: 'order-1',
-            status: 'done',
-            name: 'Краторный бургер',
-            createdAt: '2026-08-20T00:00:00.000Z',
-            updatedAt: '2026-08-20T00:00:00.000Z',
-            number: 12354,
-            price: 5000
-          }
-        })
-      })
-    );
+    await page.routeFromHAR('tests/hars/user.har', {
+      url: '**/api/auth/user',
+      notFound: 'abort'
+    });
+    await page.routeFromHAR('tests/hars/order.har', {
+      url: '**/api/orders',
+      notFound: 'abort'
+    });
 
     await page.goto('/');
     await expect(page.getByText('Соберите бургер')).toBeVisible();
+    await expect(page.getByText(user)).toBeVisible();
 
     await page
-      .locator('li', { hasText: bun?.name })
+      .locator('li', { hasText: bun })
       .getByRole('button', { name: 'Добавить' })
       .click();
     await page
-      .locator('li', { hasText: main?.name })
+      .locator('li', { hasText: main })
       .getByRole('button', { name: 'Добавить' })
       .click();
 
     await page.getByRole('button', { name: 'Оформить заказ' }).click();
 
-    const modal = page.getByTestId('modal');
-    await expect(modal).toBeVisible();
-    await expect(modal.getByText('12354')).toBeVisible();
+    await expect(page.getByTestId('modal')).toBeVisible();
+    await expect(page.getByTestId('modal').getByText(order)).toBeVisible();
 
     await expect(page.getByText('Выберите булки').first()).toBeVisible();
     await expect(page.getByText('Выберите начинку')).toBeVisible();
