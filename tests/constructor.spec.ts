@@ -8,8 +8,7 @@ const user = 'Алексей';
 test.describe('Burger constructor', () => {
   test.beforeEach(async ({ page }) => {
     await page.routeFromHAR('tests/hars/ingredients.har', {
-      url: '**/api/ingredients',
-      notFound: 'abort'
+      url: '**/api/ingredients'
     });
     await page.goto('/');
   });
@@ -64,12 +63,10 @@ test.describe('Burger constructor', () => {
     });
 
     await page.routeFromHAR('tests/hars/user.har', {
-      url: '**/api/auth/user',
-      notFound: 'abort'
+      url: '**/api/auth/user'
     });
     await page.routeFromHAR('tests/hars/order.har', {
-      url: '**/api/orders',
-      notFound: 'abort'
+      url: '**/api/orders'
     });
 
     await page.goto('/');
